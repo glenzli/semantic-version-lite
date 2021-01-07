@@ -31,8 +31,8 @@ function isVersionTag(tag: string) {
   return /^v\d+\.\d+.\d+(-[^\s.]+\.\d+)?$/.test(tag);
 }
 
-function parseVersionTag(tag: string) {
-  const parsed = /^v(\d+)\.(\d+).(\d+)(-([^\s.]+)\.(\d+))?$/.exec(tag);
+function parseVersion(ver: string) {
+  const parsed = /^v(\d+)\.(\d+).(\d+)(-([^\s.]+)\.(\d+))?$/.exec(ver);
   if (parsed) {
     const major = parseInt(parsed[1], 10);
     const minor = parseInt(parsed[2], 10);
@@ -47,7 +47,7 @@ function parseVersionTag(tag: string) {
 export function getLastVersion(branch: string, preRelease?: string) {
   const lastTag = getLastTag(branch, isVersionTag);
   if (lastTag) {
-    const version = parseVersionTag(lastTag.tag);
+    const version = parseVersion(lastTag.tag);
     if (version.preRelease === preRelease) {
       return version;
     }
@@ -58,7 +58,7 @@ export function getLastVersion(branch: string, preRelease?: string) {
     try {
       const pkg = JSON.parse(fs.readFileSync(pkgFile, { encoding: 'utf-8' }));
       if (pkg.version) {
-        return parseVersionTag(pkg.version);
+        return parseVersion(pkg.version);
       }
     } catch (e) {
       // do nothing
