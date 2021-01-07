@@ -1,0 +1,29 @@
+{
+  "name": "semantic-version-lite",
+  "version": "1.0.0",
+  "description": "simple semantic version tool",
+  "main": "dist/index.js",
+  "scripts": {
+    "commit": "git-cz",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/glenzli/semantic-version-lite.git"
+  },
+  "keywords": [
+    "semantic",
+    "version"
+  ],
+  "author": "glenzli <glenzli@outlook.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/glenzli/semantic-version-lite/issues"
+  },
+  "homepage": "https://github.com/glenzli/semantic-version-lite#readme",
+  "devDependencies": {
+    "git-cz": "^4.7.6",
+    "typescript": "^4.1.3"
+  }
+}
