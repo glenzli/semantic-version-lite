@@ -132,16 +132,13 @@ export function nextVersion(branch: string, options: VersionOptions = {}) {
   const lastRelease = getLastRelease(branch, options.preRelease);
   // last release exists
   if (lastRelease) {
-    console.log('use last release');
     return nextVersionFrom(options, lastCommit, lastRelease.version, lastRelease.commit);
   }
   // last release do not exists
   const pkgRelease = getPackageRelease(options.packageRoot);
   if (pkgRelease) {
-    console.log('use pakcage release');
     return nextVersionFrom(options, lastCommit, pkgRelease.version, pkgRelease.commit);
   }
-  console.log('use first release');
   // first release
   const initialVersion = options.initialVersion && isVersionStr(options.initialVersion) ? options.initialVersion : '1.0.0';
   return options.preRelease ? nextPreReleaseVersion(parseVersion(initialVersion)!) : initialVersion;
