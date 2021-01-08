@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+      "moduleResolution": "node",
+      "target": "es5",
+      "module": "commonJs",
+      "lib": [
+          "ES2015",
+          "ES2016",
+          "ES2017",
+          "ES2018",
+          "ES2019",
+          "ESNext",
+          "dom"
+      ],
+      "strict": true,
+      "sourceMap": true,
+      "declaration": true,
+      "resolveJsonModule": true,
+      "allowSyntheticDefaultImports": true,
+      "experimentalDecorators": true,
+      "emitDecoratorMetadata": true,
+      "esModuleInterop": true,
+      "declarationDir": "dist/types",
+      "outDir": "dist",
+      "jsx": "react",
+      "noImplicitAny": false,
+      "downlevelIteration": true,
+      "skipLibCheck": true,
+      "strictPropertyInitialization": false,
+      "baseUrl": ".",
+  },
+  "include": [
+      "src",
+  ],
+  "exclude": [
+      "node_modules",
+  ]
+}

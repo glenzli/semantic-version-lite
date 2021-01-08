@@ -1,27 +1,29 @@
-import { exec } from './exec';
-import { VersionChange } from './version.interface';
+import { exec, execSingleLine } from './exec';
+import { VersionDigit } from './version.interface';
 
 export function getLastCommit(branch: string) {
-  return exec(`git rev-parse ${branch}`);
+  return execSingleLine(`git rev-parse ${branch}`);
 }
 
-function getCommits(from: string, to: string) {
-  const logs = exec(`git log ${from}...${to} --pretty=%h%B__SEMANTIC_LOG_SPLIT__`);
+function getCommits(from: string | undefined, to: string) {
+  const arg = from ? `${from}...${to}` : '';
+  const logs = exec(`git log ${arg} --pretty=%h%B__SEMANTIC_LOG_SPLIT__`);
   return logs.split('__SEMANTIC_LOG_SPLIT__').map(log => log.trim()).filter(Boolean);
 }
 
-export function analyzeVersionChange(from: string, to: string) {
+export function getVersionChange(from: string | undefined, to: string) {
   const commits = getCommits(from, to);
   for (let i = 0; i < commits.length; ++i) {
     const commit = commits[i];
     if (commit.includes('BREAKING CHANGE:')) {
-      return VersionChange.Major;
+      return VersionDigit.Major;
     }
     if (commit.includes('feat:')) {
-      return VersionChange.Minor;
+      return VersionDigit.Minor;
     }
     if (commit.includes('fix:') || commit.includes('perf:')) {
-      return VersionChange.Patch;
+      return VersionDigit.Patch;
     }
   }
+  return VersionDigit.None;
 }

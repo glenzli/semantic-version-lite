@@ -8,7 +8,6 @@
 		"typescriptreact"
 	],
 	"eslint.nodePath": "./node_modules",
-	"eslint.enable": true,
 	"files.eol": "\n",
 	"typescript.preferences.quoteStyle": "single"
 }
