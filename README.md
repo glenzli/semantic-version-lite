@@ -8,6 +8,7 @@ Sometimes we just need a tool to compute the next semantic version of packages w
 - Support pre-release version compute.
 - Support version compute between pre-release and stable versions.
 - Support pre-release version sorting: alpha -> beta -> rc.
+- Support unstable version compute (v0.x.x). (NOTE: unstable version will never bump to stable, you have to update to v1.0.0 manually).
 
 ## Install
 ```
