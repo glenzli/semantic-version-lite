@@ -87,7 +87,12 @@ function nextReleaseVersion(change: VersionDigit, version: Version) {
     return `${version.major}.${version.minor}.${version.patch}`;
   }
   switch (change) {
-    case VersionDigit.Major: return `${version.major + 1}.0.0`;
+    case VersionDigit.Major:
+      if (version.major === 0) {
+        // unstable version
+        return `${version.major}.${version.minor + 1}.0`;
+      }
+      return `${version.major + 1}.0.0`;
     case VersionDigit.Minor: return `${version.major}.${version.minor + 1}.0`;
     case VersionDigit.Patch: return `${version.major}.${version.minor}.${version.patch + 1}`;
   }
