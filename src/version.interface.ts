@@ -6,9 +6,12 @@ export enum VersionDigit {
 }
 
 export interface VersionOptions {
+  /* root dir to locate package.json */
   packageRoot?: string;
+  /* pre-release type, like alpha/beta/rc */
   preRelease?: string;
+  /* initial version to use if not previous version is find */
   initialVersion?: string;
-  releaseBranch?: string;
+  /* version bump from stable to pre-release, by default it's a major version bump */
   preReleaseBumpDigit?: VersionDigit.Major | VersionDigit.Minor;
 }
