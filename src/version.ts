@@ -1,7 +1,7 @@
 import { getLastTag } from './tag';
 import fs from 'fs';
 import path from 'path';
-import { VersionDigit, VersionOptions } from './version.interface';
+import { VersionDigit, VersionOptions, SemanticVersion, SemanticRelease } from './version.interface';
 import { exec } from './exec';
 import { getLastCommit, getVersionChange } from './commit';
 
@@ -9,7 +9,7 @@ function isVersionStr(str: string) {
   return /^v?\d+\.\d+.\d+(-[^\s.]+(\.\d+)?)?$/.test(str);
 }
 
-function parseVersion(ver: string) {
+function parseVersion(ver: string): SemanticVersion | undefined {
   const parsed = /^v?(\d+)\.(\d+).(\d+)(-([^\s.]+)(\.(\d+))?)?$/.exec(ver);
   if (parsed) {
     const major = parseInt(parsed[1], 10);
@@ -25,7 +25,7 @@ function parseVersion(ver: string) {
   return undefined;
 }
 
-function getLastRelease(branch: string, preRelease?: string) {
+function getLastRelease(branch: string, preRelease?: string): SemanticRelease | undefined {
   const lastTag = getLastTag(branch, isVersionStr);
   if (lastTag) {
     const version = parseVersion(lastTag.tag);
@@ -57,7 +57,7 @@ function getVersionCommit(pkgFile: string, pkgContent: string) {
   return undefined;
 }
 
-function getPackageRelease(packageRoot?: string) {
+function getPackageRelease(packageRoot?: string): SemanticRelease | undefined {
   const pkgFile = path.join(packageRoot || process.cwd(), './package.json');
   if (fs.existsSync(pkgFile)) {
     try {
@@ -76,13 +76,11 @@ function getPackageRelease(packageRoot?: string) {
   return undefined;
 }
 
-type Version = NonNullable<ReturnType<typeof parseVersion>>;
-
-function nextPreReleaseVersion(version: Version) {
+function nextPreReleaseVersion(version: SemanticVersion) {
   return `${version.major}.${version.minor}.${version.patch}-${version.preRelease}.${(version.preVersion ?? 0) + 1}`;
 }
 
-function nextReleaseVersion(change: VersionDigit, version: Version) {
+function nextReleaseVersion(change: VersionDigit, version: SemanticVersion) {
   if (version.preRelease) {
     return `${version.major}.${version.minor}.${version.patch}`;
   }
@@ -107,7 +105,7 @@ function isLargerPreRelease(preRelease: string, ref: string) {
   }
 }
 
-function nextVersionFrom(options: VersionOptions, lastCommit: string, version: Version, versionCommit: string | undefined) {
+function nextVersionFrom(options: VersionOptions, lastCommit: string, version: SemanticVersion, versionCommit: string | undefined) {
   const change = getVersionChange(versionCommit, lastCommit);
   if (change !== VersionDigit.None) {
     if (options.preRelease) {
@@ -129,20 +127,59 @@ function nextVersionFrom(options: VersionOptions, lastCommit: string, version: V
   return undefined;
 }
 
+function latestVersion(ver1: SemanticVersion, ver2: SemanticVersion) {
+  if (ver1.major > ver2.major) {
+    return ver1;
+  } else if (ver1.major === ver2.major) {
+    if (ver1.minor > ver2.minor) {
+      return ver1;
+    } else if (ver1.minor === ver2.minor) {
+      if (ver1.patch > ver1.patch) {
+        return ver1;
+      } else if (ver1.patch === ver2.patch) {
+        if (ver1.preRelease) {
+          if (!ver2.preRelease) {
+            return ver2;
+          } else {
+            if (ver1.preRelease === ver2.preRelease) {
+              return ver1.preVersion! > ver2.preVersion! ? ver1 : ver2;
+            }
+            return isLargerPreRelease(ver1.preRelease, ver2.preRelease) ? ver1 : ver2;
+          }
+        } else if (ver2.preRelease) {
+          return ver1;
+        }
+        return ver1;
+      }
+      return ver2;
+    }
+    return ver2;
+  }
+  return ver2;
+}
+
+function latestReleaseVersion(release1: SemanticRelease | undefined, release2: SemanticRelease | undefined) {
+  if (release1) {
+    if (release2) {
+      const ver = latestVersion(release1.version, release2.version);
+      return ver === release1.version ? release1 : release2;
+    }
+    return release1;
+  }
+  return release2;
+}
+
 export function nextVersion(branch: string, options: VersionOptions = {}) {
   // sync
   exec('git fetch');
   // figure out version
   const lastCommit = getLastCommit(branch);
-  const lastRelease = getLastRelease(branch, options.preRelease);
-  // last release exists
-  if (lastRelease) {
-    return nextVersionFrom(options, lastCommit, lastRelease.version, lastRelease.commit);
-  }
-  // last release do not exists
+  const lastTagRelease = getLastRelease(branch, options.preRelease);
   const pkgRelease = getPackageRelease(options.packageRoot);
-  if (pkgRelease) {
-    return nextVersionFrom(options, lastCommit, pkgRelease.version, pkgRelease.commit);
+  const latest = latestReleaseVersion(lastTagRelease, pkgRelease);
+  // last release exists
+  if (latest) {
+    return nextVersionFrom(options, lastCommit, latest.version, latest.commit);
   }
   // first release
   const initialVersion = options.initialVersion && isVersionStr(options.initialVersion) ? options.initialVersion : '1.0.0';

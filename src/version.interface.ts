@@ -15,3 +15,17 @@ export interface VersionOptions {
   /* version bump from stable to pre-release, by default it's a major version bump */
   preReleaseBumpDigit?: VersionDigit.Major | VersionDigit.Minor;
 }
+
+export interface SemanticVersion {
+  major: number;
+  minor: number;
+  patch: number;
+  preRelease: string;
+  preVersion?: number;
+  ver: string;
+}
+
+export interface SemanticRelease {
+  version: SemanticVersion;
+  commit?: string;
+}
